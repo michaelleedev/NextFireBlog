@@ -2,9 +2,10 @@ import React from 'react'
 import styles from '../../styles/Admin.module.css';
 import AuthCheck from '../../components/AuthCheck';
 import { firestore, auth, serverTime } from '../../lib/firebase';
-import { doc, getDoc, collection, collectionGroup, updateDoc, } from '@firebase/firestore';
+import { doc, updateDoc, } from '@firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { ErrorMessage } from '@hookform/error-message';
+import ImageUploader from '@/components/ImageUploader';
 
 import { useState } from 'react';
 import { useRouter } from 'next/router';
@@ -35,16 +36,15 @@ function PostManager() {
   const postRef = doc(firestore, 'users', `${uid}`, 'posts', `${slug}`);
   const [post] = useDocumentData(postRef);
 
-  console.log(postRef);
-
   return (
     <main className={styles.container}>
+
       {post && (
         <>
           <section>
             <h1>{post.title}</h1>
             <p>ID: {post.slug}</p>
-
+            <ImageUploader />
             <PostForm postRef={postRef} defaultValues={post} preview={preview} />
           </section>
 

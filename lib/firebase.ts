@@ -20,14 +20,21 @@ export const storage = getStorage(app);
 export const googleAuthProvider = new GoogleAuthProvider();
 export const serverTime = serverTimestamp();
 
-export async function getUserWithUsername(username : string){
+export async function getUserWithUsername(username: string) {
     const usersRef = collection(firestore, 'users');
     const q = query(usersRef, where('username', '==', username), limit(1));
     const userDoc = (await getDocs(q)).docs[0];
     return userDoc;
 }
 
-export function postToJSON(doc : any){
+export async function getUIDwithUsername(username: string){
+    const usersRef = collection(firestore, 'users');
+    const q = query(usersRef, where('username', '==', username), limit(1));
+    const userDoc = (await getDocs(q)).docs[0];
+    return userDoc.id;
+}
+
+export function postToJSON(doc: any) {
     const data = doc.data();
     return {
         ...data,
@@ -36,4 +43,4 @@ export function postToJSON(doc : any){
     };
 }
 
-export const fromMillis = (millis : number) => Timestamp.fromMillis(millis);
+export const fromMillis = (millis: number) => Timestamp.fromMillis(millis);

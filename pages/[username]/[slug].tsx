@@ -1,19 +1,24 @@
 import styles from '@/styles/Post.module.css';
 import PostContent from '../../components/PostContent';
-import { firestore, getUserWithUsername, postToJSON } from '../../lib/firebase';
+import { firestore, getUserWithUsername, getUIDwithUsername, postToJSON } from '../../lib/firebase';
 import {collectionGroup, getDocs, doc,  query, where, limit} from '@firebase/firestore';
 import { useDocumentData } from 'react-firebase-hooks/firestore';
 import Metatags from '@/components/Metatags';
+import HeartButton from '@/components/HeartButton';
+import AuthCheck from '@/components/AuthCheck';
+import Link from 'next/link';
 
 export async function getStaticProps({ params } : {params:any}) {
   const { slug, username } = params;
   const userDoc = await getUserWithUsername(username);
 
+  const uid = await getUIDwithUsername(username);
+
   let post;
   let path;
 
   if (userDoc) {
-    const postRef = doc(firestore, 'posts', slug);
+    const postRef = doc(firestore, 'users', `${uid}`, 'posts', `${slug}`);
     const postQuery = query(collectionGroup(firestore, 'posts'), where('slug', '==', slug), limit(1));
     post = (await getDocs(postQuery)).docs.map(postToJSON);
 
@@ -21,7 +26,7 @@ export async function getStaticProps({ params } : {params:any}) {
   }
 
   return {
-    props: { post, path },
+    props: { post, path, uid, slug},
     revalidate: 5000,
   };
 }
@@ -50,7 +55,7 @@ export async function getStaticPaths() {
 export default function Page(props : any) {
   const postRef = doc(firestore, props.path);
   const [realtimePost] = useDocumentData(postRef);
-
+  
   const post = realtimePost || props.post;
 
   return (
@@ -64,6 +69,15 @@ export default function Page(props : any) {
         <p>
           <strong>{post.heartCount || 0} 🤍</strong>
         </p>
+        <AuthCheck
+          fallback={
+            <Link href="/enter">
+              <button>💗 Sign Up</button>
+            </Link>
+          }
+          >
+            <HeartButton uid={props.uid} slug={props.slug}/>
+          </AuthCheck>
       </aside>
     </main>
   );
